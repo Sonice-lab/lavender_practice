@@ -1,0 +1,43 @@
+package com.sonicelab_v1.spring_boot_practice_lavender.board;
+
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+// final 필드에 대한 생성자를 .class 생성시 자동으로 생성
+@RequiredArgsConstructor  // DI 처리
+@Repository // IoC, @Repository : 스프링이 데이터 접근 계층으로 인식, 데이터베이스 예외를 스프링 예외로 변환해 줌
+public class BoardNativeRepository {
+    // EntityManager JPA의 핵심 인터페이스
+    // 데이터 베이스와 모든 작업 담당
+    private final EntityManager em;
+
+    @Transactional
+    public void save(String title, String content, String username) {
+        Query query = em.createNativeQuery("insert into board_tb(title, content, username, created_at)" +
+                "values(?, ?, ?, now())");
+
+        query.setParameter(1, title);
+        query.setParameter(2, content);
+        query.setParameter(3, username);
+
+        // SELECT, I,U,D
+        query.executeUpdate();
+    }
+
+    public List<Board> findAll() {
+        String sql = """
+            select * from board_tb order by id desc
+            """;
+        Query query = em.createNativeQuery(sql, Board.class);
+        // while(rs.next) ...
+        return  query.getResultList();
+    }
+
+
+}
