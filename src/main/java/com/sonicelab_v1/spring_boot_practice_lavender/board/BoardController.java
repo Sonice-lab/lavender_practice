@@ -2,6 +2,7 @@ package com.sonicelab_v1.spring_boot_practice_lavender.board;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class BoardController {
@@ -41,6 +43,22 @@ public class BoardController {
     @GetMapping("/board/save")
     public String saveForm() {
         return "board/save-form";
+    }
+
+    // 2. 실제 데이터 저장 처리 (새로 추가해야 할 코드)
+// HTML의 <form action="/board/save" method="post"> 와 매칭됩니다.
+    @PostMapping("/board/save")
+    public String save(@RequestParam(name = "title") String title,
+                       @RequestParam(name = "content") String content,
+                       @RequestParam(name="username") String username)
+
+    {
+
+        // (이곳에 DB에 데이터를 저장하는 repository 호출 로직 작성)
+        boardNativeRepository.save(title, content, username);
+
+        // 저장이 완료되면 게시글 목록 화면이나 메인 화면으로 리다이렉트 (PRG 패턴)
+        return "redirect:/";
     }
 
 
