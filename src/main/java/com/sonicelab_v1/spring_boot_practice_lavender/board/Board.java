@@ -1,5 +1,6 @@
 package com.sonicelab_v1.spring_boot_practice_lavender.board;
 
+import com.sonicelab_v1.spring_boot_practice_lavender.user.User;
 import com.sonicelab_v1.spring_boot_practice_lavender.util.MyDateUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import java.sql.Timestamp;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Board {
     @Id // 이 필드가 기본기 임을 나타냄
     // 기본키 값을 자동으로 생성 (IDENTITY 전략 -> DB 기본 설정 따른다) AUTO_INCREMENT 기능 사용
@@ -25,7 +27,17 @@ public class Board {
     // 별도 어노테이션이 없으면 필드명이 컬럼명이 됨.
     private String title;
     private String content;
-    private String username;
+    // private String username;
+
+    //N:1
+    // 데이터를 가지고 오는 전략
+    // 1. LAZY - 빈 껍데기만 가지고 왔다가 .을 활용하여 가지고 왔을 때 user 정보를 검색할 때 한 번더 쿼리 던지기
+    // 실무에서 보통 LAZY 전략을 사용함
+    // LAZY 전략: 게시글을 조회할 때 사용자는 바로 조회하지 않고, 실제로 사용할 때 그 때 한 번 더 조회
+    // 2. EAGER - 한 방에 다 가지고 오기, 쓰진 않지만 일단 전부 가지고 온다.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id") // board_tb ()에 만들어질 외래키 컬럼 이름 설정
+    private User user;
 
     // now() <-- 사용하지 않아도 자동으로 PC --> DB 날짜 주입
     @CreationTimestamp
@@ -34,10 +46,10 @@ public class Board {
     // 비즈니스 로직을 위한 생성자 설계
     // id 와 createdAt은 JPA 자동으로 설정하므로 매개변수에서 제외
     @Builder
-    public Board(String title, String content, String username) {
+    public Board(String title, String content, User user) {
         this.title = title;
         this.content = content;
-        this.username = username;
+        this.user = user;
     }
 
     // 자신에 상태값을 변경하는 메서드 추가 (영속성 엔티티를 수정하는 메서드)
@@ -57,6 +69,13 @@ public class Board {
     // 시간을 포맷을 메서드를 추가
     public String getTime() {
         return MyDateUtil.timestampFormat(createdAt);
+    }
+
+    public boolean isOwner(Long userId) {
+        // 어떻게 작성할 수 있을까?
+        // 게시글 수정/삭제 권한 체크용 편의 메서드
+        // 게시글을 작성한 유저와 사용자 유저가 같은가?
+        return this.user.getId().equals(userId);
     }
 
 }
