@@ -32,11 +32,53 @@ public class BoardNativeRepository {
 
     public List<Board> findAll() {
         String sql = """
-            select * from board_tb order by id desc
-            """;
+                select * from board_tb order by id desc
+                """;
         Query query = em.createNativeQuery(sql, Board.class);
         // while(rs.next) ...
-        return  query.getResultList();
+        return query.getResultList();
+    }
+
+    public Board findById(Long id) {
+        String sql = """
+                
+                  select * from board_tb where id = ? 
+                """;
+        Query query = em.createNativeQuery(sql, Board.class);
+        query.setParameter(1, id); // 값 바인딩
+        try {
+            return (Board) query.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        String sql = """
+                delete from board_tb where id = ? 
+                """;
+        Query query = em.createNativeQuery(sql);
+        query.setParameter(1, id);
+        query.executeUpdate();
+    }
+
+    @Transactional
+    public boolean updateById(String title, String content, Long id) {
+        String sql = """
+                update board_tb set title = ?, content = ? where id = ? 
+                """;
+        Query query = em.createNativeQuery(sql);
+        query.setParameter(1, title);
+        query.setParameter(2, content);
+        query.setParameter(3, id);
+
+        int rows = query.executeUpdate();
+        if (rows > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

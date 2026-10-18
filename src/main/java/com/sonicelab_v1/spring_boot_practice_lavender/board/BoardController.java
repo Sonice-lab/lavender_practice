@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,11 @@ public class BoardController {
     // GET http://localhost:8080/board/3
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
-        model.addAttribute("board", sampleBoard(id));
+        Board board = boardNativeRepository.findById(id);
+        if (board == null) {
+            return "redirect:/";
+        }
+        model.addAttribute("board", board);
         return "board/detail";
     }
 
@@ -36,7 +42,6 @@ public class BoardController {
     public String saveForm() {
         return "board/save-form";
     }
-
 
 
     // TODO
@@ -48,7 +53,33 @@ public class BoardController {
                 "username", "김민수");
     }
 
+    // 게시글 삭제
+    @PostMapping("/board/{id}/delete")
+    public String delete(@PathVariable Long id) {
+        boardNativeRepository.deleteById(id);
+        // PRG 패턴
+        return "redirect:/";
+    }
 
+    // GET http://localhost:8080/board/1/update (화면 요청)
+    @GetMapping("/board/{id}/update")
+    public String updateForm(@PathVariable Long id, Model model) {
+        // 수정하기 화면 요청 (먼저 조회 부터)
+        Board board = boardNativeRepository.findById(id);
+        model.addAttribute("board", board);
+        return "board/update-form";
+    }
+
+    // POST http://localhost:8080/board/1/update (게시글 수정 기능 요청)
+    @PostMapping("/board/{id}/update")
+    public String update(@PathVariable Long id,
+                         @RequestParam(name = "title") String title,
+                         @RequestParam(name = "content") String content) {
+
+        boardNativeRepository.updateById(title, content, id);
+        // PRG 패턴
+        return "redirect:/board/" + id; // 리다이렉트 수정된 게시글 상세보기 화면 이동
+    }
 
 
 }
