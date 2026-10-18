@@ -1,5 +1,6 @@
 package com.sonicelab_v1.spring_boot_practice_lavender.board;
 
+import com.sonicelab_v1.spring_boot_practice_lavender.user.User;
 import lombok.Data;
 
 public class BoardRequest {
@@ -8,13 +9,10 @@ public class BoardRequest {
     public static class SaveDto {
         private String title;
         private String content;
-        private String username;
 
         // 검증 메서드 (선택 사항)
         public void validate() {
-            if (username == null || username.trim().isEmpty()) {
-                throw new IllegalArgumentException("이름은 필수입니다");
-            }
+
             if (title == null || title.trim().isEmpty()) {
                 throw new IllegalArgumentException("제목은 필수입니다");
             }
@@ -22,7 +20,21 @@ public class BoardRequest {
                 throw new IllegalArgumentException("내용은 필수입니다");
             }
         }
+
+        //메서드 만들기
+        // Dto에서 Entity로 변환하는 편의 메서드 설계
+        public Board toEntity(User user) {
+            return Board.builder()
+                    .title(this.title)
+                    .content(this.content)
+                    .user(user)
+                    // 매개변수로 가지고 오기
+                    // 세션에서 가져온 User 객체 설정
+                    .build();
+        }
     }
+
+
 
     @Data
     public static class UpdateDto {
